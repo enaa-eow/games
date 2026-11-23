@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pass the Phrase Challenge — Year 4 ESL</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Fredoka (playful display) & Nunito (legible body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <style>
+    :root {
+      --font-display: 'Fredoka', sans-serif;
+      --font-body: 'Nunito', sans-serif;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: linear-gradient(135deg, #e0f2fe 0%, #fef9c3 50%, #dcfce7 100%);
+      min-height: 100vh;
+      color: #1e293b;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, .font-display {
+      font-family: var(--font-display);
+    }
+
+    /* Tactile 3D Classroom Game Buttons */
+    .btn-game {
+      transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
+      box-shadow: 0 5px 0 rgba(15, 23, 42, 0.2);
+    }
+    .btn-game:hover:not(:disabled) {
+      transform: translateY(-2px);
+      filter: brightness(1.03);
+    }
+    .btn-game:active:not(:disabled) {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 rgba(15, 23, 42, 0.2);
+    }
+    .btn-game:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Animated Equalizer Bars */
+    @keyframes eqBounce {
+      0%, 100% { height: 22%; }
+      50% { height: 95%; }
+    }
+    .eq-bar {
+      animation: eqBounce 0.65s ease-in-out infinite;
+    }
+    .eq-bar:nth-child(2) { animation-delay: 0.12s; }
+    .eq-bar:nth-child(3) { animation-delay: 0.24s; }
+    .eq-bar:nth-child(4) { animation-delay: 0.36s; }
+    .eq-bar:nth-child(5) { animation-delay: 0.18s; }
+    .eq-bar:nth-child(6) { animation-delay: 0.30s; }
+    .eq-bar:nth-child(7) { animation-delay: 0.08s; }
+
+    .paused-eq .eq-bar {
+      animation: none;
+      height: 22% !important;
+    }
+
+    /* Glowing Baton Pulse */
+    @keyframes batonGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.55); }
+      50% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+    }
+    .baton-active {
+      animation: batonGlow 1.6s infinite;
+    }
+
+    /* Smooth Card Entrance */
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .animate-pop-in {
+      animation: popIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* Confetti Piece */
+    @keyframes confettiFall {
+      0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+    }
+    .confetti-piece {
+      position: fixed;
+      top: -20px;
+      width: 10px;
+      height: 16px;
+      border-radius: 3px;
+      z-index: 60;
+      pointer-events: none;
+      animation: confettiFall 2.8s linear forwards;
+    }
+  </style>
+</head>
+<body class="selection:bg-amber-200 selection:text-slate-900">
+
+  <!-- Top Navigation & Score HUD -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b-2 border-sky-200 shadow-sm">
+    <div class="max-w-5xl mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2">
+      <!-- Brand / Home Button -->
+      <button onclick="goHome()" class="flex items-center gap-2.5 text-left group focus:outline-none">
+        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-sky-500 to-teal-500 text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
+          <i class="fa-solid fa-bullhorn text-lg sm:text-xl"></i>
+        </div>
+        <div>
+          <span class="font-display font-bold text-base sm:text-xl text-slate-800 block leading-tight">
+            Pass the Phrase <span class="text-sky-600">Challenge</span>
+          </span>
+          <span class="text-[11px] sm:text-xs font-bold text-teal-700 tracking-wide uppercase">
+            Year 4 ESL • Teacher Talk &amp; Repetition
+          </span>
+        </div>
+      </button>
+
+      <!-- Live Stats & Controls -->
+      <div class="flex items-center gap-1.5 sm:gap-2.5">
+        <!-- Score Pill -->
+        <div class="bg-amber-100 border-2 border-amber-300 px-3 py-1 rounded-full flex items-center gap-1.5 shadow-inner">
+          <i class="fa-solid fa-star text-amber-500"></i>
+          <span id="hud-score" class="font-display font-bold text-amber-900 text-sm sm:text-base">0</span>
+          <span class="hidden sm:inline text-xs font-bold text-amber-700">pts</span>
+        </div>
+
+        <!-- Streak Pill -->
+        <div class="bg-rose-100 border-2 border-rose-300 px-3 py-1 rounded-full flex items-center gap-1.5 shadow-inner">
+          <i class="fa-solid fa-fire text-rose-500"></i>
+          <span id="hud-streak" class="font-display font-bold text-rose-900 text-sm sm:text-base">0</span>
+        </div>
+
+        <!-- Teacher Talk Info Modal Trigger -->
+        <button onclick="togglePedagogyModal(true)" title="Why Repetition Matters"
+          class="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 border-2 border-indigo-300 px-2.5 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-chalkboard-user"></i>
+          <span class="hidden md:inline">Teacher Talk Guide</span>
+        </button>
+
+        <!-- Sound Effects Mute Toggle -->
+        <button id="sfx-toggle-btn" onclick="toggleSfx()" title="Toggle Sound Effects"
+          class="bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-slate-300 w-9 h-9 rounded-full flex items-center justify-center transition">
+          <i id="sfx-icon" class="fa-solid fa-volume-high"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-5xl mx-auto px-3 sm:px-6 py-5 sm:py-8">
+
+    <!-- =========================================================
+         SCREEN 1: WELCOME & LEVEL SELECTION
+    ========================================================== -->
+    <section id="screen-home" class="animate-pop-in space-y-6">
+      <!-- Hero Banner Card -->
+      <div class="bg-white rounded-3xl border-2 border-sky-200 shadow-xl p-5 sm:p-8 relative overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          <div class="lg:col-span-7 space-y-4">
+            <div class="inline-flex items-center gap-2 bg-teal-100 text-teal-800 border border-teal-300 px-3.5 py-1 rounded-full text-xs sm:text-sm font-extrabold">
+              <i class="fa-solid fa-repeat"></i>
+              <span>Meaningful Repetition = Confident Speaking!</span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-800 leading-tight">
+              Listen, Echo &amp; <span class="text-sky-600">Pass the Phrase!</span>
+            </h1>
+            <p class="text-slate-600 text-base sm:text-lg leading-relaxed">
+              Welcome, Year 4 champions! Join <strong>Cikgu Sarah</strong> and your classmates in a 6-round speaking relay. Listen carefully to everyday sentences about <strong>food, school, family, and daily activities</strong>, repeat them aloud with rhythm, and master English grammar and pronunciation!
+            </p>
+
+            <!-- 4-Step Learning Loop Pills -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
+              <div class="bg-sky-50 border border-sky-200 rounded-2xl p-3 text-center">
+                <div class="w-8 h-8 mx-auto mb-1 rounded-full bg-sky-500 text-white font-display font-bold flex items-center justify-center">1</div>
+                <p class="font-bold text-sky-900 text-xs sm:text-sm">Listen Closely</p>
+                <p class="text-[11px] text-sky-700">Hear Cikgu's voice</p>
+              </div>
+              <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-center">
+                <div class="w-8 h-8 mx-auto mb-1 rounded-full bg-amber-500 text-white font-display font-bold flex items-center justify-center">2</div>
+                <p class="font-bold text-amber-900 text-xs sm:text-sm">Repeat Aloud</p>
+                <p class="text-[11px] text-amber-700">Echo the rhythm</p>
+              </div>
+              <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 text-center">
+                <div class="w-8 h-8 mx-auto mb-1 rounded-full bg-emerald-500 text-white font-display font-bold flex items-center justify-center">3</div>
+                <p class="font-bold text-emerald-900 text-xs sm:text-sm">Spot &amp; Match</p>
+                <p class="text-[11px] text-emerald-700">Pick A, B, or C</p>
+              </div>
+              <div class="bg-purple-50 border border-purple-200 rounded-2xl p-3 text-center">
+                <div class="w-8 h-8 mx-auto mb-1 rounded-full bg-purple-500 text-white font-display font-bold flex items-center justify-center">4</div>
+                <p class="font-bold text-purple-900 text-xs sm:text-sm">Pass It On!</p>
+                <p class="text-[11px] text-purple-700">Grammar &amp; sounds</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Custom SVG Classroom Relay Illustration -->
+          <div class="lg:col-span-5 flex justify-center">
+            <div class="w-full max-w-xs sm:max-w-sm bg-gradient-to-b from-sky-100 to-amber-50 rounded-3xl border-2 border-sky-200 p-4 shadow-inner">
+              <svg viewBox="0 0 320 230" class="w-full h-auto" aria-label="Teacher and pupils passing the phrase baton">
+                <!-- Classroom Chalkboard -->
+                <rect x="35" y="15" width="250" height="95" rx="14" fill="#0f766e" stroke="#f59e0b" stroke-width="5"/>
+                <text x="160" y="48" text-anchor="middle" fill="#fef08a" font-family="Fredoka, sans-serif" font-size="16" font-weight="700">LISTEN &amp; REPEAT!</text>
+                <text x="160" y="72" text-anchor="middle" fill="#ffffff" font-family="Nunito, sans-serif" font-size="12" font-weight="700">"Practice makes progress!"</text>
+                <!-- Soundwaves -->
+                <path d="M110 88 Q135 80 160 88 T210 88" fill="none" stroke="#5eead4" stroke-width="3" stroke-linecap="round"/>
+
+                <!-- Teacher Character (Left) -->
+                <circle cx="85" cy="145" r="24" fill="#fed7aa"/>
+                <!-- Hijab / Hair -->
+                <path d="M58 145 Q58 114 85 114 Q112 114 112 145 L116 175 L54 175 Z" fill="#0284c7"/>
+                <circle cx="85" cy="145" r="19" fill="#fed7aa"/>
+                <!-- Smiling Face -->
+                <circle cx="79" cy="142" r="2.5" fill="#1e293b"/>
+                <circle cx="91" cy="142" r="2.5" fill="#1e293b"/>
+                <path d="M79 151 Q85 157 91 151" fill="none" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                <!-- Teacher Body -->
+                <path d="M55 215 Q55 175 85 175 Q115 175 115 215 Z" fill="#0ea5e9"/>
+
+                <!-- Glowing Phrase Baton in Middle -->
+                <g transform="translate(142, 148)">
+                  <rect x="0" y="8" width="38" height="12" rx="6" fill="#f59e0b" stroke="#b45309" stroke-width="2"/>
+                  <circle cx="38" cy="14" r="9" fill="#fef08a" stroke="#f59e0b" stroke-width="2.5"/>
+                  <path d="M12 -4 L16 3 M26 -6 L24 2 M34 -2 L30 4" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+                </g>
+
+                <!-- Pupil Character (Right) -->
+                <circle cx="235" cy="148" r="22" fill="#fde68a"/>
+                <path d="M213 142 Q215 120 235 120 Q255 120 257 142 Q245 132 235 135 Q222 132 213 142 Z" fill="#1e293b"/>
+                <circle cx="229" cy="146" r="2.5" fill="#1e293b"/>
+                <circle cx="241" cy="146" r="2.5" fill="#1e293b"/>
+                <path d="M229 154 Q235 160 241 154" fill="none" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                <!-- School Uniform -->
+                <path d="M207 215 Q207 176 235 176 Q263 176 263 215 Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+                <path d="M222 176 L235 194 L248 176" fill="none" stroke="#0284c7" stroke-width="3"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Choose Difficulty Level -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between px-1">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-layer-group text-sky-600"></i>
+            <span>Choose Your Challenge Level</span>
+          </h2>
+          <span class="text-xs sm:text-sm font-bold text-slate-500">6 Phrases per Relay</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+          <!-- Level 1 -->
+          <div class="bg-white rounded-3xl border-2 border-emerald-300 shadow-lg p-5 flex flex-col justify-between hover:border-emerald-500 transition">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="bg-emerald-100 text-emerald-800 text-xs font-extrabold px-3 py-1 rounded-full uppercase">Level 1</span>
+                <span id="best-lvl-1" class="text-xs font-bold text-amber-600"></span>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-2xl shadow">
+                  🌱
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold text-slate-800">Seedling Speakers</h3>
+                  <p class="text-xs font-bold text-emerald-700">Clear &amp; Steady Pace</p>
+                </div>
+              </div>
+              <p class="text-sm text-slate-600">
+                Short, clear 5–6 word sentences focusing on core Year 4 vocabulary, present simple verbs, and prepositions.
+              </p>
+            </div>
+            <button onclick="startLevel(1)" class="btn-game mt-5 w-full py-3.5 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-display font-bold text-lg flex items-center justify-center gap-2">
+              <i class="fa-solid fa-play"></i>
+              <span>Start Level 1</span>
+            </button>
+          </div>
+
+          <!-- Level 2 -->
+          <div class="bg-white rounded-3xl border-2 border-amber-300 shadow-lg p-5 flex flex-col justify-between hover:border-amber-500 transition">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="bg-amber-100 text-amber-800 text-xs font-extrabold px-3 py-1 rounded-full uppercase">Level 2</span>
+                <span id="best-lvl-2" class="text-xs font-bold text-amber-600"></span>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-2xl shadow">
+                  🌟
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold text-slate-800">Rising Stars</h3>
+                  <p class="text-xs font-bold text-amber-700">Natural Classroom Rhythm</p>
+                </div>
+              </div>
+              <p class="text-sm text-slate-600">
+                7–9 word everyday sentences with frequency adverbs (<em>always, usually</em>), past tense verbs, and descriptive adjectives.
+              </p>
+            </div>
+            <button onclick="startLevel(2)" class="btn-game mt-5 w-full py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-display font-bold text-lg flex items-center justify-center gap-2">
+              <i class="fa-solid fa-play"></i>
+              <span>Start Level 2</span>
+            </button>
+          </div>
+
+          <!-- Level 3 -->
+          <div class="bg-white rounded-3xl border-2 border-rose-300 shadow-lg p-5 flex flex-col justify-between hover:border-rose-500 transition">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="bg-rose-100 text-rose-800 text-xs font-extrabold px-3 py-1 rounded-full uppercase">Level 3</span>
+                <span id="best-lvl-3" class="text-xs font-bold text-amber-600"></span>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-rose-500 text-white flex items-center justify-center text-2xl shadow">
+                  🚀
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold text-slate-800">Champion Speakers</h3>
+                  <p class="text-xs font-bold text-rose-700">Expressive &amp; Detailed</p>
+                </div>
+              </div>
+              <p class="text-sm text-slate-600">
+                9–12 word expressive sentences with time clauses, silent letters, connected speech, and future/past storytelling.
+              </p>
+            </div>
+            <button onclick="startLevel(3)" class="btn-game mt-5 w-full py-3.5 px-4 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-display font-bold text-lg flex items-center justify-center gap-2">
+              <i class="fa-solid fa-play"></i>
+              <span>Start Level 3</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         SCREEN 2: ACTIVE CHALLENGE ARENA
+    ========================================================== -->
+    <section id="screen-game" class="hidden space-y-5">
+
+      <!-- Classroom Relay Progress Bar -->
+      <div class="bg-white rounded-3xl border-2 border-sky-200 shadow-md p-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2">
+            <span id="game-level-badge" class="bg-sky-100 text-sky-800 text-xs font-extrabold px-3 py-1 rounded-full">Level 1</span>
+            <span id="game-topic-badge" class="bg-amber-100 text-amber-900 text-xs font-extrabold px-3 py-1 rounded-full flex items-center gap-1.5">
+              <span>🍛</span> <span>Food</span>
+            </span>
+          </div>
+          <div class="text-xs sm:text-sm font-extrabold text-slate-600">
+            Phrase <span id="progress-current" class="text-sky-600">1</span> of <span id="progress-total">6</span>
+          </div>
+        </div>
+
+        <!-- 6-Station Relay Track -->
+        <div id="relay-track" class="grid grid-cols-6 gap-1.5 sm:gap-3">
+          <!-- Populated dynamically by JS -->
+        </div>
+      </div>
+
+      <!-- STEP 1 & STEP 2: TEACHER TALK AUDIO + REPEAT-AFTER-ME ACTIVITY -->
+      <div class="bg-white rounded-3xl border-2 border-sky-200 shadow-lg p-5 sm:p-6 space-y-5">
+        <!-- Teacher Header & Audio Controls -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-sky-50 border-2 border-sky-200 rounded-2xl p-4">
+          <div class="flex items-center gap-3.5">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-500 to-teal-500 text-white flex items-center justify-center text-2xl shadow-md shrink-0">
+              <i class="fa-solid fa-chalkboard-user"></i>
+            </div>
+            <div>
+              <span class="text-xs font-extrabold uppercase tracking-wider text-sky-700">Step 1 • Listen to Cikgu Sarah</span>
+              <h2 id="teacher-prompt-title" class="text-lg sm:text-xl font-bold text-slate-800">
+                Listen carefully to the phrase!
+              </h2>
+              <p class="text-xs sm:text-sm text-slate-600">
+                Tip: Listen to the rhythm and word endings. Replay as many times as you need!
+              </p>
+            </div>
+          </div>
+
+          <!-- Audio Playback Buttons -->
+          <div class="flex flex-wrap items-center gap-2.5">
+            <button id="btn-play-normal" onclick="playCurrentSentence(1.0)"
+              class="btn-game flex-1 sm:flex-none px-4 py-3 rounded-2xl bg-sky-600 hover:bg-sky-700 text-white font-display font-bold text-sm sm:text-base flex items-center justify-center gap-2">
+              <i class="fa-solid fa-volume-high"></i>
+              <span>Listen</span>
+            </button>
+            <button id="btn-play-slow" onclick="playCurrentSentence(0.68)"
+              class="btn-game flex-1 sm:flex-none px-4 py-3 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-display font-bold text-sm sm:text-base flex items-center justify-center gap-2">
+              <i class="fa-solid fa-turtle"></i>
+              <span>Slow Echo</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Visual Equalizer & Rhythm Chunk Indicator -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-slate-900 text-white rounded-2xl">
+          <div class="flex items-center gap-3">
+            <div id="audio-equalizer" class="paused-eq flex items-end gap-1 h-8 w-14">
+              <span class="eq-bar w-1.5 bg-sky-400 rounded-full"></span>
+              <span class="eq-bar w-1.5 bg-teal-400 rounded-full"></span>
+              <span class="eq-bar w-1.5 bg-amber-400 rounded-full"></span>
+              <span class="eq-bar w-1.5 bg-rose-400 rounded-full"></span>
+              <span class="eq-bar w-1.5 bg-emerald-400 rounded-full"></span>
+              <span class="eq-bar w-1.5 bg-sky-400 rounded-full"></span>
+              <span class="eq-bar w-1.5 bg-amber-400 rounded-full"></span>
+            </div>
+            <div>
+              <p id="audio-status-text" class="text-sm font-bold text-sky-200">Ready to play audio</p>
+              <p class="text-[11px] text-slate-400">Listen for 3 rhythmic phrase chunks</p>
+            </div>
+          </div>
+
+          <!-- 3 Phrase Rhythm Beats (Light up in sync with chunks!) -->
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-400 mr-1">Phrase Beats:</span>
+            <div id="chunk-beat-0" class="px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300 transition-all">
+              Part 1
+            </div>
+            <div id="chunk-beat-1" class="px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300 transition-all">
+              Part 2
+            </div>
+            <div id="chunk-beat-2" class="px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300 transition-all">
+              Part 3
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: REPEAT-AFTER-ME INTERACTIVE ACTIVITY -->
+        <div id="repeat-activity-box" class="bg-amber-50/90 border-2 border-amber-300 rounded-2xl p-4 sm:p-5 transition-all">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="bg-amber-500 text-white text-xs font-extrabold px-2.5 py-0.5 rounded-full uppercase">Step 2 • Repeat After Me!</span>
+                <span id="echo-bonus-badge" class="text-xs font-extrabold text-amber-800 bg-amber-200 px-2.5 py-0.5 rounded-full">+50 Echo Bonus</span>
+              </div>
+              <h3 class="text-base sm:text-lg font-bold text-slate-800">
+                Echo Cikgu's phrase out loud!
+              </h3>
+              <p id="repeat-instruction" class="text-xs sm:text-sm text-slate-600">
+                Use your microphone <strong>OR</strong> tap each rhythm beat as you speak aloud to pass the phrase!
+              </p>
+            </div>
+
+            <!-- Interactive Repeat Controls (Mic + Beat Tap Alternative) -->
+            <div class="flex flex-wrap items-center gap-2.5">
+              <button id="btn-mic-repeat" onclick="startMicRepeat()"
+                class="btn-game px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-display font-bold text-sm sm:text-base flex items-center gap-2">
+                <i class="fa-solid fa-microphone"></i>
+                <span id="mic-btn-label">Echo with Mic</span>
+              </button>
+
+              <!-- 3-Beat Tap Echo Pads for No-Mic / Classroom Use -->
+              <div class="flex items-center gap-1.5 bg-white p-1.5 rounded-2xl border-2 border-amber-300">
+                <span class="text-[11px] font-extrabold text-amber-800 px-1.5">Tap &amp; Say:</span>
+                <button id="tap-beat-0" onclick="tapEchoBeat(0)" class="w-9 h-9 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-display font-bold text-sm transition">1</button>
+                <button id="tap-beat-1" onclick="tapEchoBeat(1)" class="w-9 h-9 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-display font-bold text-sm transition">2</button>
+                <button id="tap-beat-2" onclick="tapEchoBeat(2)" class="w-9 h-9 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-display font-bold text-sm transition">3</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Mic Feedback Bar (Hidden until mic active or completed) -->
+          <div id="mic-feedback-panel" class="hidden mt-3 pt-3 border-t border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <span id="mic-pulse-dot" class="w-3 h-3 rounded-full bg-rose-500 animate-ping"></span>
+              <span id="mic-status-msg" class="text-xs sm:text-sm font-bold text-slate-700">Listening to your voice... Speak loud and clear!</span>
+            </div>
+            <!-- Live Volume Meter -->
+            <div class="w-full sm:w-44 h-3 bg-amber-200 rounded-full overflow-hidden">
+              <div id="mic-volume-bar" class="h-full bg-emerald-500 transition-all duration-75" style="width: 10%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: SELECT WHAT YOU HEARD (3 WRITTEN OPTIONS) -->
+      <div class="bg-white rounded-3xl border-2 border-sky-200 shadow-lg p-5 sm:p-6 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-700">Step 3 • Spot the Exact Phrase</span>
+            <h3 class="text-lg sm:text-xl font-bold text-slate-800">Which sentence did Cikgu say?</h3>
+          </div>
+          <span class="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+            Tap A, B, or C
+          </span>
+        </div>
+
+        <div id="options-container" class="space-y-3">
+          <!-- 3 Option Cards rendered via JS -->
+        </div>
+      </div>
+
+      <!-- STEP 4: CORRECT SENTENCE REVEAL + PRONUNCIATION & GRAMMAR SPOTLIGHT -->
+      <div id="feedback-spotlight-card" class="hidden animate-pop-in bg-white rounded-3xl border-4 border-emerald-400 shadow-xl p-5 sm:p-7 space-y-5">
+        <!-- Encouraging Teacher Feedback Banner -->
+        <div id="feedback-banner" class="rounded-2xl p-4 flex items-start sm:items-center gap-3.5 bg-emerald-50 border-2 border-emerald-200">
+          <div id="feedback-icon" class="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-2xl shrink-0">
+            <i class="fa-solid fa-star"></i>
+          </div>
+          <div class="space-y-0.5">
+            <h4 id="feedback-heading" class="font-display font-bold text-lg sm:text-xl text-emerald-900">
+              Bagus! Spot on!
+            </h4>
+            <p id="feedback-subtext" class="text-sm text-emerald-800 font-semibold">
+              You listened carefully and matched the exact phrase!
+            </p>
+          </div>
+        </div>
+
+        <!-- Correct Sentence Display -->
+        <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 sm:p-5 text-center space-y-2">
+          <span class="text-xs font-extrabold uppercase tracking-wider text-slate-500">Correct Sentence</span>
+          <p id="revealed-sentence-text" class="font-display font-bold text-xl sm:text-2xl md:text-3xl text-slate-800 leading-snug">
+            <!-- Populated with highlighted spans -->
+          </p>
+          <div class="pt-2 flex flex-wrap justify-center gap-2">
+            <button onclick="choralPassDrill()"
+              class="btn-game px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-display font-bold text-xs sm:text-sm flex items-center gap-2">
+              <i class="fa-solid fa-users"></i>
+              <span>Final Class Choral Repeat</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Pronunciation & Grammar Pattern Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Pronunciation Pattern -->
+          <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 space-y-2">
+            <div class="flex items-center gap-2 text-amber-800 font-display font-bold text-base">
+              <span class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center text-sm">
+                <i class="fa-solid fa-lips"></i>
+              </span>
+              <span>Pronunciation Spotlight</span>
+            </div>
+            <div id="pronunciation-focus-tag" class="inline-block bg-amber-200/80 text-amber-950 font-extrabold text-xs px-2.5 py-1 rounded-lg">
+              Focus words
+            </div>
+            <p id="pronunciation-tip-text" class="text-sm text-slate-700 leading-relaxed">
+              <!-- Pronunciation explanation -->
+            </p>
+          </div>
+
+          <!-- Grammar Pattern -->
+          <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-4 space-y-2">
+            <div class="flex items-center gap-2 text-sky-800 font-display font-bold text-base">
+              <span class="w-8 h-8 rounded-xl bg-sky-600 text-white flex items-center justify-center text-sm">
+                <i class="fa-solid fa-puzzle-piece"></i>
+              </span>
+              <span>Grammar Pattern</span>
+            </div>
+            <div id="grammar-focus-tag" class="inline-block bg-sky-200/80 text-sky-950 font-extrabold text-xs px-2.5 py-1 rounded-lg">
+              Pattern
+            </div>
+            <p id="grammar-tip-text" class="text-sm text-slate-700 leading-relaxed">
+              <!-- Grammar explanation -->
+            </p>
+          </div>
+        </div>
+
+        <!-- Why Repetition Helps Callout -->
+        <div class="bg-purple-50 border-2 border-purple-200 rounded-2xl px-4 py-3 flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-repeat"></i>
+          </div>
+          <p id="repetition-benefit-text" class="text-xs sm:text-sm font-bold text-purple-900">
+            <!-- Repetition takeaway -->
+          </p>
+        </div>
+
+        <!-- Next Challenge Button -->
+        <div class="flex justify-end pt-1">
+          <button id="btn-next-challenge" onclick="nextChallenge()"
+            class="btn-game w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-display font-bold text-lg flex items-center justify-center gap-2">
+            <span id="next-btn-label">Pass Baton to Next Friend</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         SCREEN 3: RELAY SUMMARY & CERTIFICATE
+    ========================================================== -->
+    <section id="screen-summary" class="hidden animate-pop-in space-y-6">
+      <div class="bg-white rounded-3xl border-4 border-amber-300 shadow-2xl p-6 sm:p-8 text-center space-y-5">
+        <div class="inline-flex items-center gap-2 bg-amber-100 text-amber-800 border border-amber-300 px-4 py-1 rounded-full text-xs sm:text-sm font-extrabold uppercase">
+          <i class="fa-solid fa-trophy"></i>
+          <span>Relay Complete! Tahniah!</span>
+        </div>
+
+        <h2 class="text-3xl sm:text-4xl font-bold text-slate-800">
+          You Passed All 6 Phrases!
+        </h2>
+
+        <!-- Star Rating Display -->
+        <div id="summary-stars" class="flex justify-center gap-3 text-4xl sm:text-5xl text-amber-400 py-1">
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+        </div>
+
+        <p id="summary-encouragement" class="text-slate-600 text-base sm:text-lg max-w-2xl mx-auto font-semibold">
+          Wonderful effort! Every time you listened and repeated aloud, you strengthened your English pronunciation and sentence structure.
+        </p>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-3 gap-3 sm:gap-4 max-w-xl mx-auto pt-2">
+          <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 sm:p-4">
+            <p class="text-xs font-extrabold text-amber-700 uppercase">Total Score</p>
+            <p id="summary-score" class="font-display font-bold text-2xl sm:text-3xl text-amber-900">0</p>
+          </div>
+          <div class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-3 sm:p-4">
+            <p class="text-xs font-extrabold text-emerald-700 uppercase">First-Try Hits</p>
+            <p id="summary-accuracy" class="font-display font-bold text-2xl sm:text-3xl text-emerald-900">0/6</p>
+          </div>
+          <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-3 sm:p-4">
+            <p class="text-xs font-extrabold text-sky-700 uppercase">Echo Drills</p>
+            <p id="summary-echoes" class="font-display font-bold text-2xl sm:text-3xl text-sky-900">0/6</p>
+          </div>
+        </div>
+
+        <!-- Mastered Sentences Review List -->
+        <div class="text-left bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 sm:p-5 space-y-3 mt-4">
+          <h3 class="font-display font-bold text-lg text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-teal-600"></i>
+            <span>Tap Any Phrase to Listen &amp; Repeat Again</span>
+          </h3>
+          <div id="summary-phrase-list" class="space-y-2.5">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row justify-center gap-3 pt-2">
+          <button onclick="replaySameLevel()"
+            class="btn-game px-6 py-3.5 rounded-2xl bg-sky-600 hover:bg-sky-700 text-white font-display font-bold text-base sm:text-lg flex items-center justify-center gap-2">
+            <i class="fa-solid fa-rotate-right"></i>
+            <span>Practice Level Again</span>
+          </button>
+          <button id="btn-next-level" onclick="playNextLevel()"
+            class="btn-game px-6 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-display font-bold text-base sm:text-lg flex items-center justify-center gap-2">
+            <span>Try Next Level</span>
+            <i class="fa-solid fa-forward"></i>
+          </button>
+          <button onclick="goHome()"
+            class="btn-game px-6 py-3.5 rounded-2xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-display font-bold text-base sm:text-lg flex items-center justify-center gap-2">
+            <i class="fa-solid fa-house"></i>
+            <span>Level Menu</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================
+       TEACHER TALK & REPETITION PEDAGOGY MODAL
+  ========================================================== -->
+  <div id="pedagogy-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl border-2 border-indigo-200 max-w-2xl w-full p-5 sm:p-7 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto animate-pop-in">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
+            <i class="fa-solid fa-chalkboard-user"></i>
+          </div>
+          <div>
+            <h3 class="font-display font-bold text-xl text-slate-800">Why Repetition Works in Teacher Talk</h3>
+            <p class="text-xs font-bold text-indigo-600">Year 4 Malaysian ESL Classroom Pedagogy</p>
+          </div>
+        </div>
+        <button onclick="togglePedagogyModal(false)" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-sm text-slate-700 leading-relaxed">
+        <p>
+          In primary ESL classrooms, <strong>meaningful repetition</strong> is not mindless drilling—it is a bridge between <em>hearing</em> new English sounds and <em>speaking</em> with confidence!
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="bg-sky-50 border border-sky-200 rounded-2xl p-3.5">
+            <h4 class="font-display font-bold text-sky-900 mb-1">1. Clear Modeling &amp; Slow Echo</h4>
+            <p class="text-xs text-slate-600">
+              Teachers model natural speed first, then slow down (<em>Slow Echo</em>) so pupils hear tricky endings like <code>-s</code>, <code>-es</code>, and <code>-ed</code>.
+            </p>
+          </div>
+          <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3.5">
+            <h4 class="font-display font-bold text-amber-900 mb-1">2. Rhythmic Chunking</h4>
+            <p class="text-xs text-slate-600">
+              Breaking sentences into 3 meaningful chunks (Subject + Action + Time/Place) reduces memory load for 10-year-old learners.
+            </p>
+          </div>
+          <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5">
+            <h4 class="font-display font-bold text-emerald-900 mb-1">3. Active Echo Before Reading</h4>
+            <p class="text-xs text-slate-600">
+              Repeating aloud <em>before</em> looking at the text trains phonological memory and prevents spelling-based mispronunciation.
+            </p>
+          </div>
+          <div class="bg-purple-50 border border-purple-200 rounded-2xl p-3.5">
+            <h4 class="font-display font-bold text-purple-900 mb-1">4. Noticing Grammar &amp; Sounds</h4>
+            <p class="text-xs text-slate-600">
+              After each attempt, highlighting grammar and pronunciation patterns turns repetition into lasting language awareness.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-2">
+        <button onclick="togglePedagogyModal(false)" class="btn-game px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-display font-bold text-sm">
+          Got It! Back to Game
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Banner (No alert() ever used) -->
+  <div id="toast-banner" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900 text-white px-4 py-2.5 rounded-full shadow-xl text-xs sm:text-sm font-bold flex items-center gap-2">
+    <i id="toast-icon" class="fa-solid fa-circle-info text-amber-400"></i>
+    <span id="toast-text">Notification</span>
+  </div>
+
+  <!-- =========================================================
+       GAME LOGIC & CURRICULUM DATA
+  ========================================================== -->
+  <script>
+    // ---------------------------------------------------------
+    // 1. CURRICULUM DATA: 3 LEVELS x 6 CHALLENGES (18 PHRASES)
+    // Topics: Food, School, Family, Daily Activities
+    // ---------------------------------------------------------
+    const RELAY_FRIENDS = [
+      { name: "Aina", emoji: "👧🏽" },
+      { name: "Amir", emoji: "👦🏽" },
+      { name: "Mei Ling", emoji: "👧🏻" },
+      { name: "Ravi", emoji: "👦🏾" },
+      { name: "Siti", emoji: "🧕🏽" },
+      { name: "You!", emoji: "⭐" }
+    ];
+
+    const LEVELS_DATA = {
+      1: {
+        title: "Level 1: Seedling Speakers",
+        badgeClass: "bg-emerald-100 text-emerald-800",
+        challenges: [
+          {
+            topic: "Food",
+            topicEmoji: "🍛",
+            sentence: "I eat nasi lemak for breakfast.",
+            chunks: ["I eat", "nasi lemak", "for breakfast."],
+            options: [
+              "I eat nasi lemak for breakfast.",
+              "I ate nasi lemak for dinner.",
+              "I like roti canai for breakfast."
+            ],
+            correctIndex: 0,
+            pronunciationHighlight: ["eat", "breakfast"],
+            pronunciationTag: "Long /iː/ in 'eat' • BREK-fuhst",
+            pronunciationTip: "Stretch the /iː/ sound in 'eat', and say 'breakfast' as two quick beats: BREK-fuhst (not break-fast).",
+            grammarHighlight: ["eat", "for breakfast"],
+            grammarTag: "Present Simple for Habits",
+            grammarTip: "We use Present Simple ('I eat') with 'for breakfast' to talk about meals we eat regularly.",
+            repetitionTip: "Repeating 'I eat ___ for breakfast' helps you talk smoothly about any morning meal!"
+          },
+          {
+            topic: "School",
+            topicEmoji: "🏫",
+            sentence: "We read storybooks in the library.",
+            chunks: ["We read", "storybooks", "in the library."],
+            options: [
+              "We write notebooks in the classroom.",
+              "We read storybooks in the library.",
+              "We read textbooks in the canteen."
+            ],
+            correctIndex: 1,
+            pronunciationHighlight: ["storybooks", "library"],
+            pronunciationTag: "LI-bra-ry • Final /s/ in storybooks",
+            pronunciationTip: "Say all three beats in 'LI-bra-ry' clearly, and don't drop the plural /s/ at the end of 'storybooks'.",
+            grammarHighlight: ["in the library"],
+            grammarTag: "Preposition of Place: 'in'",
+            grammarTip: "Use 'in' when people are inside a room or building like 'in the library' or 'in the classroom'.",
+            repetitionTip: "Echoing place phrases like 'in the library' builds natural sentence rhythm."
+          },
+          {
+            topic: "Family",
+            topicEmoji: "👨‍👩‍👧‍👦",
+            sentence: "My mother cooks delicious curry chicken.",
+            chunks: ["My mother", "cooks", "delicious curry chicken."],
+            options: [
+              "My mother cooks delicious curry chicken.",
+              "My grandmother cooked spicy fried chicken.",
+              "My sister cooks delicious curry noodles."
+            ],
+            correctIndex: 0,
+            pronunciationHighlight: ["cooks", "delicious"],
+            pronunciationTag: "Crisp /s/ in 'cooks' • de-LI-cious",
+            pronunciationTip: "Sound the sharp /s/ at the end of 'cooks' and stress the middle syllable of 'de-LI-cious'.",
+            grammarHighlight: ["mother", "cooks"],
+            grammarTag: "Singular Subject + Verb '-s'",
+            grammarTip: "When talking about one person ('My mother' / 'she'), add '-s' to the action verb: 'cooks'.",
+            repetitionTip: "Repeating 'My mother cooks' trains your ear and tongue to keep the singular '-s' ending."
+          },
+          {
+            topic: "Daily Activities",
+            topicEmoji: "⏰",
+            sentence: "Aiman brushes his teeth every morning.",
+            chunks: ["Aiman brushes", "his teeth", "every morning."],
+            options: [
+              "Aiman washes his face every evening.",
+              "Aiman brushed his teeth yesterday morning.",
+              "Aiman brushes his teeth every morning."
+            ],
+            correctIndex: 2,
+            pronunciationHighlight: ["brushes", "teeth"],
+            pronunciationTag: "BRU-shes (2 beats) • Soft 'th' in teeth",
+            pronunciationTip: "Adding '-es' to 'brush' makes two beats ('bru-shes'). Place your tongue gently between your teeth for 'teeth'.",
+            grammarHighlight: ["brushes", "every morning"],
+            grammarTag: "Verb + '-es' for Daily Routines",
+            grammarTip: "Verbs ending in '-sh' add '-es' ('brushes') for singular subjects in daily routine sentences.",
+            repetitionTip: "Chanting daily routine chunks locks in the '-es' verb ending automatically!"
+          },
+          {
+            topic: "Food & School",
+            topicEmoji: "🍉",
+            sentence: "Mei Ling buys fresh watermelon at recess.",
+            chunks: ["Mei Ling buys", "fresh watermelon", "at recess."],
+            options: [
+              "Mei Ling buys fresh watermelon at recess.",
+              "Mei Ling brings sweet pineapple at lunch.",
+              "Mei Ling buys fresh bananas after school."
+            ],
+            correctIndex: 0,
+            pronunciationHighlight: ["watermelon", "recess"],
+            pronunciationTag: "WA-ter-me-lon • REE-cess",
+            pronunciationTip: "Put strong stress on the first syllable of 'WA-ter-me-lon' and 'REE-cess'.",
+            grammarHighlight: ["buys", "at recess"],
+            grammarTag: "Time Preposition: 'at'",
+            grammarTip: "Use 'at' for specific school time periods such as 'at recess' or 'at lunchtime'.",
+            repetitionTip: "Repeating time chunks like 'at recess' helps you speak in complete thoughts."
+          },
+          {
+            topic: "Family & Activities",
+            topicEmoji: "🏸",
+            sentence: "We play badminton together on Sunday.",
+            chunks: ["We play", "badminton together", "on Sunday."],
+            options: [
+              "We watch television together on Saturday.",
+              "We play badminton together on Sunday.",
+              "They play football together on Sunday."
+            ],
+            correctIndex: 1,
+            pronunciationHighlight: ["badminton", "together"],
+            pronunciationTag: "BAD-min-ton • to-GE-ther",
+            pronunciationTip: "Pronounce all three syllables in 'BAD-min-ton' and stress the middle beat in 'to-GE-ther'.",
+            grammarHighlight: ["on Sunday"],
+            grammarTag: "Preposition 'on' + Days",
+            grammarTip: "Always use 'on' before days of the week: 'on Sunday', 'on Monday', 'on Friday'.",
+            repetitionTip: "Saying 'on Sunday' aloud three times makes day-of-the-week grammar automatic!"
+          }
+        ]
+      },
+
+      2: {
+        title: "Level 2: Rising Stars",
+        badgeClass: "bg-amber-100 text-amber-800",
+        challenges: [
+          {
+            topic: "Food",
+            topicEmoji: "☕",
+            sentence: "My father always drinks hot teh tarik after lunch.",
+            chunks: ["My father always drinks", "hot teh tarik", "after lunch."],
+            options: [
+              "My father never drinks cold teh tarik before lunch.",
+              "My father always drinks hot teh tarik after lunch.",
+              "My uncle always drinks hot coffee after dinner."
+            ],
+            correctIndex: 1,
+            pronunciationHighlight: ["always", "drinks"],
+            pronunciationTag: "AL-wayz (/z/ ending) • Linked 'drinks_hot'",
+            pronunciationTip: "End 'always' with a buzzing /z/ sound, and link 'drinks' smoothly into 'hot'.",
+            grammarHighlight: ["always drinks"],
+            grammarTag: "Adverb of Frequency Placement",
+            grammarTip: "Frequency words like 'always' go right BEFORE the main action verb ('always drinks').",
+            repetitionTip: "Practicing 'always + verb' chunks prevents word-order mix-ups when speaking."
+          },
+          {
+            topic: "School",
+            topicEmoji: "📚",
+            sentence: "Our English teacher writes new vocabulary on the whiteboard.",
+            chunks: ["Our English teacher", "writes new vocabulary", "on the whiteboard."],
+            options: [
+              "Our Science teacher draws new diagrams on the blackboard.",
+              "Our English teacher wrote old sentences in the notebook.",
+              "Our English teacher writes new vocabulary on the whiteboard."
+            ],
+            correctIndex: 2,
+            pronunciationHighlight: ["vocabulary", "whiteboard"],
+            pronunciationTag: "vo-CAB-u-la-ry (5 beats) • WHITE-board",
+            pronunciationTip: "Clap the 5 beats of 'vo-CAB-u-la-ry' and keep the /t/ clear in 'WHITE-board'.",
+            grammarHighlight: ["Our", "writes"],
+            grammarTag: "Possessive 'Our' + Singular Verb",
+            grammarTip: "'Our' shows something belongs to us, and singular 'teacher' pairs with 'writes'.",
+            repetitionTip: "Breaking longer school sentences into 3 rhythmic chunks makes them easy to master!"
+          },
+          {
+            topic: "Family",
+            topicEmoji: "🌻",
+            sentence: "My younger sister helps grandmother water the garden plants.",
+            chunks: ["My younger sister", "helps grandmother", "water the garden plants."],
+            options: [
+              "My younger sister helps grandmother water the garden plants.",
+              "My older brother helps grandfather clean the living room.",
+              "My younger sister helped grandmother water the flower pots."
+            ],
+            correctIndex: 0,
+            pronunciationHighlight: ["younger", "plants"],
+            pronunciationTag: "YUNG-er • Final /ts/ in 'plants'",
+            pronunciationTip: "'Younger' rhymes with 'hunger' (not 'longer'). Crisp /ts/ at the end of 'plants'!",
+            grammarHighlight: ["helps", "water"],
+            grammarTag: "Help + Person + Base Verb",
+            grammarTip: "After 'helps + someone', use the base verb ('water') without '-s' or '-ing'.",
+            repetitionTip: "Echoing 'helps + person + action' gives you a handy pattern for family chores."
+          },
+          {
+            topic: "Daily Activities",
+            topicEmoji: "🎒",
+            sentence: "Ravi usually packs his school bag before going to bed.",
+            chunks: ["Ravi usually packs", "his school bag", "before going to bed."],
+            options: [
+              "Ravi sometimes checks his timetable before going to school.",
+              "Ravi usually packs his school bag before going to bed.",
+              "Ravi usually packed his sports bag after coming home."
+            ],
+            correctIndex: 1,
+            pronunciationHighlight: ["usually", "before"],
+            pronunciationTag: "U-zhoo-uh-lee • be-FORE",
+            pronunciationTip: "Pronounce 'usually' with a soft /ʒ/ sound in the middle ('U-zhoo-uh-lee').",
+            grammarHighlight: ["usually packs", "before going"],
+            grammarTag: "Before / After + Verb-ing",
+            grammarTip: "When an action verb follows 'before' or 'after', use the '-ing' form ('before going').",
+            repetitionTip: "Repeating 'before going to bed' reinforces verb-ing patterns naturally."
+          },
+          {
+            topic: "Food",
+            topicEmoji: "🥭",
+            sentence: "We bought sweet mangoes and bananas at the night market.",
+            chunks: ["We bought", "sweet mangoes and bananas", "at the night market."],
+            options: [
+              "We buy fresh papayas and oranges at the supermarket.",
+              "We brought sour apples and grapes from the fruit stall.",
+              "We bought sweet mangoes and bananas at the night market."
+            ],
+            correctIndex: 2,
+            pronunciationHighlight: ["bought", "mangoes"],
+            pronunciationTag: "Silent 'gh' in 'bought' (bawt)",
+            pronunciationTip: "'Bought' sounds like 'bawt'—the 'gh' is completely silent! Link 'mangoes_and_bananas'.",
+            grammarHighlight: ["bought"],
+            grammarTag: "Irregular Past Simple",
+            grammarTip: "'Bought' is the irregular past tense of 'buy' used for shopping trips already finished.",
+            repetitionTip: "Repeating irregular past verbs like 'bought' helps you tell past stories accurately."
+          },
+          {
+            topic: "School & Activities",
+            topicEmoji: "💻",
+            sentence: "The pupils line up quietly outside the computer room.",
+            chunks: ["The pupils", "line up quietly", "outside the computer room."],
+            options: [
+              "The pupils line up quietly outside the computer room.",
+              "The students walk quickly inside the science laboratory.",
+              "The pupils lined up noisily outside the music room."
+            ],
+            correctIndex: 0,
+            pronunciationHighlight: ["quietly", "computer"],
+            pronunciationTag: "KWI-et-lee • com-PU-ter",
+            pronunciationTip: "Say 'KWI-et-lee' in three smooth beats, and stress the middle syllable of 'com-PU-ter'.",
+            grammarHighlight: ["line up", "quietly"],
+            grammarTag: "Adverb of Manner ('-ly')",
+            grammarTip: "Adverbs ending in '-ly' ('quietly') describe HOW the pupils perform the action.",
+            repetitionTip: "Chanting 'line up quietly' connects action phrases with polite classroom habits."
+          }
+        ]
+      },
+
+      3: {
+        title: "Level 3: Champion Speakers",
+        badgeClass: "bg-rose-100 text-rose-800",
+        challenges: [
+          {
+            topic: "Food & Culture",
+            topicEmoji: "🌙",
+            sentence: "During Hari Raya, my aunt prepares rendang and crispy kuih.",
+            chunks: ["During Hari Raya,", "my aunt prepares", "rendang and crispy kuih."],
+            options: [
+              "During Hari Raya, my aunt prepares rendang and crispy kuih.",
+              "During Chinese New Year, my auntie cooked curry and sweet cakes.",
+              "Before Hari Raya, my mother prepared satay and spicy soup."
+            ],
+            correctIndex: 0,
+            pronunciationHighlight: ["prepares", "crispy"],
+            pronunciationTag: "pre-PARES (/z/ ending) • Crisp /kr/",
+            pronunciationTip: "Stress the second syllable in 'pre-PARES' with a gentle /z/ ending, and keep /kr/ crisp in 'crispy'.",
+            grammarHighlight: ["During Hari Raya,", "prepares"],
+            grammarTag: "Introductory Time Phrase + Comma",
+            grammarTip: "When a time phrase ('During Hari Raya,') starts a sentence, follow it with a pause and comma.",
+            repetitionTip: "Repeating festive sentences builds fluency and cultural storytelling confidence."
+          },
+          {
+            topic: "School",
+            topicEmoji: "📖",
+            sentence: "Sarah borrowed an interesting adventure book from the school library yesterday.",
+            chunks: ["Sarah borrowed", "an interesting adventure book", "from the school library yesterday."],
+            options: [
+              "Sarah returns an exciting mystery novel to the town library today.",
+              "Sarah borrowed an interesting adventure book from the school library yesterday.",
+              "Sarah borrowed an amazing animal encyclopedia from her classmate yesterday."
+            ],
+            correctIndex: 1,
+            pronunciationHighlight: ["borrowed", "interesting"],
+            pronunciationTag: "BOR-rowd (no extra beat!) • IN-tres-ting",
+            pronunciationTip: "The '-ed' in 'borrowed' sounds like a soft /d/ ('BOR-rowd')—do NOT add an extra syllable!",
+            grammarHighlight: ["borrowed", "an interesting", "yesterday"],
+            grammarTag: "Past Simple + Article 'an'",
+            grammarTip: "Use 'an' before vowel sounds ('an interesting book') and Past Simple ('borrowed') with 'yesterday'.",
+            repetitionTip: "Mastering soft '-ed' endings through rhythmic echo prevents extra-syllable habits."
+          },
+          {
+            topic: "Family",
+            topicEmoji: "🚲",
+            sentence: "Every weekend, our whole family cycles around the peaceful park together.",
+            chunks: ["Every weekend,", "our whole family cycles", "around the peaceful park together."],
+            options: [
+              "Every morning, my big family walks around the busy town together.",
+              "Last weekend, our whole family cycled through the green forest together.",
+              "Every weekend, our whole family cycles around the peaceful park together."
+            ],
+            correctIndex: 2,
+            pronunciationHighlight: ["whole", "peaceful"],
+            pronunciationTag: "Silent 'w' in 'whole' (hole) • PEACE-ful",
+            pronunciationTip: "The 'w' in 'whole' is silent (sounds like 'hole'), and 'peaceful' ends with a gentle /fʊl/.",
+            grammarHighlight: ["family cycles"],
+            grammarTag: "Collective Noun + Singular Verb",
+            grammarTip: "'Our whole family' acts as one unit here, so it takes the singular verb 'cycles'.",
+            repetitionTip: "Echoing longer descriptive sentences improves breath control and natural phrasing."
+          },
+          {
+            topic: "Daily Activities",
+            topicEmoji: "🎸",
+            sentence: "After finishing his homework, Daniel practices playing the acoustic guitar.",
+            chunks: ["After finishing his homework,", "Daniel practices", "playing the acoustic guitar."],
+            options: [
+              "After finishing his homework, Daniel practices playing the acoustic guitar.",
+              "Before starting his homework, Daniel enjoys playing electric video games.",
+              "After finishing her housework, Diana practiced playing the classical piano."
+            ],
+            correctIndex: 0,
+            pronunciationHighlight: ["practices", "acoustic"],
+            pronunciationTag: "PRAC-ti-ces (3 beats) • a-COUS-tic",
+            pronunciationTip: "Sound all three syllables in 'PRAC-ti-ces' and stress the middle beat of 'a-COUS-tic'.",
+            grammarHighlight: ["practices playing"],
+            grammarTag: "Verb + Gerund ('-ing')",
+            grammarTip: "After the verb 'practice', always use the '-ing' form of the next verb ('practices playing').",
+            repetitionTip: "Repeating 'practices playing' locks in verb + -ing combinations automatically."
+          },
+          {
+            topic: "Food & Family",
+            topicEmoji: "🥟",
+            sentence: "Grandma taught us how to fold delicious curry puffs carefully.",
+            chunks: ["Grandma taught us", "how to fold", "delicious curry puffs carefully."],
+            options: [
+              "Grandpa showed us how to bake crunchy peanut biscuits quickly.",
+              "Grandma taught us how to fold delicious curry puffs carefully.",
+              "Grandma teaches them how to fry crispy banana fritters carefully."
+            ],
+            correctIndex: 1,
+            pronunciationHighlight: ["taught", "carefully"],
+            pronunciationTag: "Silent 'gh' in 'taught' (tawt) • CARE-ful-ly",
+            pronunciationTip: "'Taught' rhymes with 'bought' (the 'gh' is silent). Say 'CARE-ful-ly' in three clear beats.",
+            grammarHighlight: ["taught us", "how to fold"],
+            grammarTag: "Teach + Object + 'how to' + Verb",
+            grammarTip: "Use 'taught + person + how to + base verb' to explain learning a special skill.",
+            repetitionTip: "Chanting 'taught us how to ___' gives you a versatile pattern for sharing skills."
+          },
+          {
+            topic: "School & Future",
+            topicEmoji: "🔭",
+            sentence: "Tomorrow morning, Year Four pupils will visit the National Science Centre.",
+            chunks: ["Tomorrow morning,", "Year Four pupils will visit", "the National Science Centre."],
+            options: [
+              "Yesterday morning, Year Four pupils visited the National Art Gallery.",
+              "Tomorrow afternoon, Year Five pupils will visit the National Museum.",
+              "Tomorrow morning, Year Four pupils will visit the National Science Centre."
+            ],
+            correctIndex: 2,
+            pronunciationHighlight: ["National", "Science"],
+            pronunciationTag: "NA-shuh-nuhl • SAI-uhns",
+            pronunciationTip: "Pronounce 'National' with a soft /ʃ/ sound ('NA-shuh-nuhl') and 'Science' in two beats ('SAI-uhns').",
+            grammarHighlight: ["Tomorrow morning,", "will visit"],
+            grammarTag: "Future Simple: 'will' + Base Verb",
+            grammarTip: "Use 'will + base verb' ('will visit') to talk about upcoming plans like 'Tomorrow morning'.",
+            repetitionTip: "Repeating future plans with 'will' prepares you for real class announcements!"
+          }
+        ]
+      }
+    };
+
+    // ---------------------------------------------------------
+    // 2. GAME STATE & AUDIO SYNTHESIZER
+    // ---------------------------------------------------------
+    let state = {
+      currentLevel: 1,
+      currentIndex: 0,
+      score: 0,
+      streak: 0,
+      firstTryHits: 0,
+      echoCompletedCount: 0,
+      hasRepeatedCurrent: false,
+      hasAnsweredCurrent: false,
+      tappedBeats: [false, false, false],
+      sfxEnabled: true,
+      isSpeaking: false,
+      micActive: false,
+      bestScores: { 1: 0, 2: 0, 3: 0 }
+    };
+
+    // Load saved best scores safely
+    try {
+      const saved = localStorage.getItem("passThePhrase_bestScores");
+      if (saved) state.bestScores = JSON.parse(saved);
+    } catch (e) {
+      // Ignore storage restrictions
+    }
+
+    // Web Audio API Sound Effects (Zero external audio files needed)
+    let audioCtx = null;
+    function getAudioCtx() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) audioCtx = new AudioContextClass();
+      }
+      if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq, type = "sine", duration = 0.18, delay = 0, gainVal = 0.14) {
+      if (!state.sfxEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+        gain.gain.setValueAtTime(gainVal, ctx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + duration);
+      } catch (e) {
+        // Fallback silently if audio blocked
+      }
+    }
+
+    function playSfx(kind) {
+      if (kind === "tap") {
+        playTone(523.25, "triangle", 0.12, 0, 0.12);
+      } else if (kind === "echoSuccess") {
+        playTone(523.25, "sine", 0.15, 0, 0.14);
+        playTone(659.25, "sine", 0.15, 0.09, 0.14);
+        playTone(783.99, "sine", 0.25, 0.18, 0.16);
+      } else if (kind === "correct") {
+        playTone(523.25, "triangle", 0.14, 0, 0.16);
+        playTone(659.25, "triangle", 0.14, 0.1, 0.16);
+        playTone(783.99, "triangle", 0.14, 0.2, 0.16);
+        playTone(1046.5, "triangle", 0.35, 0.3, 0.18);
+      } else if (kind === "encourage") {
+        playTone(392.0, "sine", 0.18, 0, 0.13);
+        playTone(349.23, "sine", 0.24, 0.14, 0.13);
+      } else if (kind === "baton") {
+        playTone(440, "sine", 0.12, 0, 0.1);
+        playTone(587.33, "sine", 0.18, 0.08, 0.12);
+      }
+    }
+
+    function toggleSfx() {
+      state.sfxEnabled = !state.sfxEnabled;
+      const icon = document.getElementById("sfx-icon");
+      icon.className = state.sfxEnabled ? "fa-solid fa-volume-high" : "fa-solid fa-volume-xmark text-rose-500";
+      showToast(state.sfxEnabled ? "Sound effects ON" : "Sound effects muted");
+    }
+
+    // ---------------------------------------------------------
+    // 3. SPEECH SYNTHESIS (TEACHER VOICE) & RHYTHM VISUALIZER
+    // ---------------------------------------------------------
+    let beatTimers = [];
+
+    function clearBeatTimers() {
+      beatTimers.forEach(t => clearTimeout(t));
+      beatTimers = [];
+      for (let i = 0; i < 3; i++) {
+        const el = document.getElementById(`chunk-beat-${i}`);
+        if (el) {
+          el.className = "px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300 transition-all";
+        }
+      }
+    }
+
+    function getBestEnglishVoice() {
+      if (!("speechSynthesis" in window)) return null;
+      const voices = window.speechSynthesis.getVoices();
+      if (!voices || voices.length === 0) return null;
+      // Prefer clear female / natural English voices
+      return (
+        voices.find(v => v.lang.includes("en-GB") && (v.name.includes("Female") || v.name.includes("Libby") || v.name.includes("Sonia") || v.name.includes("Google UK English Female"))) ||
+        voices.find(v => v.lang.includes("en-SG") || v.lang.includes("en-AU") || v.lang.includes("en-GB")) ||
+        voices.find(v => v.lang.startsWith("en")) ||
+        voices[0]
+      );
+    }
+
+    // Pre-warm voices list on browsers that load asynchronously
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.onvoiceschanged = () => getBestEnglishVoice();
+    }
+
+    function speakPhrase(text, rate = 1.0, onComplete = null) {
+      clearBeatTimers();
+      const eq = document.getElementById("audio-equalizer");
+      const statusText = document.getElementById("audio-status-text");
+
+      if (eq) eq.classList.remove("paused-eq");
+      if (statusText) {
+        statusText.textContent = rate < 0.85 ? "Cikgu speaking slowly (Echo Speed)..." : "Cikgu speaking...";
+      }
+
+      // Estimate duration and animate 3 rhythmic phrase beats
+      const wordsCount = text.split(" ").length;
+      const estimatedMs = Math.max(1600, (wordsCount * 420) / rate);
+      const stepMs = estimatedMs / 3;
+
+      for (let i = 0; i < 3; i++) {
+        const t = setTimeout(() => {
+          for (let j = 0; j < 3; j++) {
+            const el = document.getElementById(`chunk-beat-${j}`);
+            if (!el) continue;
+            if (j === i) {
+              el.className = "px-3 py-1 rounded-full bg-amber-400 border border-amber-300 text-xs font-extrabold text-slate-900 scale-110 shadow transition-all";
+            } else {
+              el.className = "px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-bold text-slate-400 transition-all";
+            }
+          }
+        }, i * stepMs);
+        beatTimers.push(t);
+      }
+
+      let finished = false;
+      const finishPlayback = () => {
+        if (finished) return;
+        finished = true;
+        clearBeatTimers();
+        if (eq) eq.classList.add("paused-eq");
+        if (statusText) statusText.textContent = "Tap Listen again or Repeat After Me!";
+        if (typeof onComplete === "function") onComplete();
+      };
+
+      if ("speechSynthesis" in window) {
+        try {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(text);
+          const chosenVoice = getBestEnglishVoice();
+          if (chosenVoice) utterance.voice = chosenVoice;
+          utterance.lang = "en-GB";
+          utterance.rate = rate;
+          utterance.pitch = 1.08; // Warm, encouraging teacher pitch
+
+          utterance.onend = () => finishPlayback();
+          utterance.onerror = () => finishPlayback();
+
+          window.speechSynthesis.speak(utterance);
+
+          // Safety fallback timeout in case browser speechSynthesis stalls
+          const safetyTimer = setTimeout(() => finishPlayback(), estimatedMs + 1500);
+          beatTimers.push(safetyTimer);
+          return;
+        } catch (err) {
+          // Fall through to timer simulation
+        }
+      }
+
+      // Fallback timer if SpeechSynthesis is unavailable
+      const fallbackTimer = setTimeout(() => finishPlayback(), estimatedMs);
+      beatTimers.push(fallbackTimer);
+    }
+
+    function playCurrentSentence(rate = 1.0) {
+      const challenge = getCurrentChallenge();
+      if (!challenge) return;
+      speakPhrase(challenge.sentence, rate);
+    }
+
+    function choralPassDrill() {
+      const challenge = getCurrentChallenge();
+      if (!challenge) return;
+      playSfx("baton");
+      showToast("Whole class repeating together: \"" + challenge.sentence + "\"");
+      speakPhrase(challenge.sentence, 0.92);
+    }
+
+    // ---------------------------------------------------------
+    // 4. REPEAT-AFTER-ME ACTIVITY (MIC + 3-BEAT TAP ALTERNATIVE)
+    // ---------------------------------------------------------
+    let activeRecognition = null;
+    let micStream = null;
+    let micVolumeInterval = null;
+
+    function stopMicActivity() {
+      state.micActive = false;
+      if (activeRecognition) {
+        try { activeRecognition.stop(); } catch (e) {}
+        activeRecognition = null;
+      }
+      if (micVolumeInterval) {
+        clearInterval(micVolumeInterval);
+        micVolumeInterval = null;
+      }
+      if (micStream) {
+        micStream.getTracks().forEach(track => track.stop());
+        micStream = null;
+      }
+      const btnLabel = document.getElementById("mic-btn-label");
+      if (btnLabel) btnLabel.textContent = state.hasRepeatedCurrent ? "Echoed! Repeat Again" : "Echo with Mic";
+    }
+
+    function completeRepeatActivity(methodLabel = "Great voice echo!") {
+      stopMicActivity();
+      const box = document.getElementById("repeat-activity-box");
+      const badge = document.getElementById("echo-bonus-badge");
+      const panel = document.getElementById("mic-feedback-panel");
+      const statusMsg = document.getElementById("mic-status-msg");
+      const pulseDot = document.getElementById("mic-pulse-dot");
+
+      if (!state.hasRepeatedCurrent) {
+        state.hasRepeatedCurrent = true;
+        state.echoCompletedCount += 1;
+        state.score += 50;
+        updateHud();
+        playSfx("echoSuccess");
+      } else {
+        playSfx("tap");
+      }
+
+      box.className = "bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-4 sm:p-5 transition-all";
+      badge.className = "text-xs font-extrabold text-white bg-emerald-600 px-3 py-0.5 rounded-full";
+      badge.innerHTML = `<i class="fa-solid fa-check mr-1"></i> +50 Echo Bonus Earned!`;
+
+      panel.classList.remove("hidden");
+      pulseDot.className = "w-3 h-3 rounded-full bg-emerald-500";
+      statusMsg.className = "text-xs sm:text-sm font-extrabold text-emerald-800";
+      statusMsg.textContent = `Hebat! ${methodLabel} Now pick the matching sentence below!`;
+      document.getElementById("mic-volume-bar").style.width = "100%";
+
+      // Light up all 3 tap pads
+      for (let i = 0; i < 3; i++) {
+        const pad = document.getElementById(`tap-beat-${i}`);
+        if (pad) {
+          pad.className = "w-9 h-9 rounded-xl bg-emerald-500 text-white font-display font-bold text-sm shadow";
+          pad.innerHTML = `<i class="fa-solid fa-check"></i>`;
+        }
+      }
+    }
+
+    function tapEchoBeat(beatIdx) {
+      playSfx("tap");
+      state.tappedBeats[beatIdx] = true;
+      const pad = document.getElementById(`tap-beat-${beatIdx}`);
+      if (pad) {
+        pad.className = "w-9 h-9 rounded-xl bg-emerald-500 text-white font-display font-bold text-sm scale-105 shadow transition";
+        pad.innerHTML = `<i class="fa-solid fa-check"></i>`;
+      }
+      if (state.tappedBeats.every(Boolean)) {
+        completeRepeatActivity("You tapped & repeated all 3 rhythm parts!");
+      } else {
+        const remaining = state.tappedBeats.filter(b => !b).length;
+        showToast(`Keep repeating aloud! Tap ${remaining} more beat${remaining > 1 ? "s" : ""}.`);
+      }
+    }
+
+    async function startMicRepeat() {
+      if (state.micActive) {
+        stopMicActivity();
+        return;
+      }
+
+      const panel = document.getElementById("mic-feedback-panel");
+      const statusMsg = document.getElementById("mic-status-msg");
+      const pulseDot = document.getElementById("mic-pulse-dot");
+      const btnLabel = document.getElementById("mic-btn-label");
+      const volBar = document.getElementById("mic-volume-bar");
+
+      panel.classList.remove("hidden");
+      pulseDot.className = "w-3 h-3 rounded-full bg-rose-500 animate-ping";
+      statusMsg.className = "text-xs sm:text-sm font-bold text-slate-700";
+      statusMsg.textContent = "Speak now! Repeat Cikgu's sentence clearly...";
+      btnLabel.textContent = "Listening...";
+      state.micActive = true;
+
+      // Try Web Speech API Recognition first, plus Web Audio volume meter
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      try {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const ctx = getAudioCtx();
+          if (ctx) {
+            const src = ctx.createMediaStreamSource(micStream);
+            const analyser = ctx.createAnalyser();
+            analyser.fftSize = 256;
+            src.connect(analyser);
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            let loudFrames = 0;
+
+            micVolumeInterval = setInterval(() => {
+              analyser.getByteFrequencyData(dataArray);
+              const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+              const pct = Math.min(100, Math.max(8, Math.round(avg * 2.2)));
+              volBar.style.width = pct + "%";
+              if (avg > 18) loudFrames++;
+              if (loudFrames >= 8 && !SpeechRec) {
+                completeRepeatActivity("Loud and clear voice echo detected!");
+              }
+            }, 100);
+          }
+        }
+      } catch (micErr) {
+        // Microphone permission denied or unavailable -> guide pupil to 3-beat tap pads
+        stopMicActivity();
+        statusMsg.textContent = "No mic detected—use the 'Tap & Say 1-2-3' pads to echo aloud!";
+        pulseDot.className = "w-3 h-3 rounded-full bg-amber-500";
+        showToast("Tap beats 1, 2, 3 while saying the sentence aloud!");
+        return;
+      }
+
+      if (SpeechRec) {
+        try {
+          activeRecognition = new SpeechRec();
+          activeRecognition.lang = "en-US";
+          activeRecognition.interimResults = true;
+          activeRecognition.maxAlternatives = 1;
+
+          activeRecognition.onresult = (event) => {
+            const transcript = Array.from(event.results)
+              .map(r => r[0].transcript)
+              .join(" ")
+              .trim();
+            if (transcript.length > 2) {
+              statusMsg.textContent = `Heard: "${transcript}"`;
+            }
+            if (event.results[0].isFinal) {
+              completeRepeatActivity(`Awesome pronunciation! ("${transcript}")`);
+            }
+          };
+
+          activeRecognition.onerror = () => {
+            if (state.micActive) {
+              completeRepeatActivity("Great speaking effort!");
+            }
+          };
+
+          activeRecognition.onend = () => {
+            if (state.micActive) {
+              completeRepeatActivity("Great speaking effort!");
+            }
+          };
+
+          activeRecognition.start();
+        } catch (recErr) {
+          // Rely on volume meter fallback
+        }
+      }
+    }
+
+    // ---------------------------------------------------------
+    // 5. NAVIGATION, RENDERING & CHALLENGE FLOW
+    // ---------------------------------------------------------
+    function updateHud() {
+      document.getElementById("hud-score").textContent = state.score;
+      document.getElementById("hud-streak").textContent = state.streak;
+
+      // Update saved best scores on Home screen
+      [1, 2, 3].forEach(lvl => {
+        const el = document.getElementById(`best-lvl-${lvl}`);
+        if (el) {
+          el.textContent = state.bestScores[lvl] > 0 ? `Best: ${state.bestScores[lvl]} pts` : "";
+        }
+      });
+    }
+
+    function showScreen(screenId) {
+      ["screen-home", "screen-game", "screen-summary"].forEach(id => {
+        document.getElementById(id).classList.add("hidden");
+      });
+      document.getElementById(screenId).classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function goHome() {
+      stopMicActivity();
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      clearBeatTimers();
+      updateHud();
+      showScreen("screen-home");
+    }
+
+    function togglePedagogyModal(show) {
+      const modal = document.getElementById("pedagogy-modal");
+      if (show) modal.classList.remove("hidden");
+      else modal.classList.add("hidden");
+    }
+
+    let toastTimeout = null;
+    function showToast(msg) {
+      const toast = document.getElementById("toast-banner");
+      const text = document.getElementById("toast-text");
+      text.textContent = msg;
+      toast.classList.remove("hidden");
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add("hidden");
+      }, 2800);
+    }
+
+    function getCurrentChallenge() {
+      const levelObj = LEVELS_DATA[state.currentLevel];
+      if (!levelObj) return null;
+      return levelObj.challenges[state.currentIndex];
+    }
+
+    function startLevel(levelNum) {
+      playSfx("baton");
+      state.currentLevel = levelNum;
+      state.currentIndex = 0;
+      state.score = 0;
+      state.streak = 0;
+      state.firstTryHits = 0;
+      state.echoCompletedCount = 0;
+      updateHud();
+      showScreen("screen-game");
+      loadChallenge();
+    }
+
+    function replaySameLevel() {
+      startLevel(state.currentLevel);
+    }
+
+    function playNextLevel() {
+      const nextLvl = state.currentLevel < 3 ? state.currentLevel + 1 : 1;
+      startLevel(nextLvl);
+    }
+
+    function renderRelayTrack() {
+      const track = document.getElementById("relay-track");
+      track.innerHTML = "";
+
+      RELAY_FRIENDS.forEach((friend, idx) => {
+        const isDone = idx < state.currentIndex;
+        const isCurrent = idx === state.currentIndex;
+
+        let cardClass = "bg-slate-50 border-slate-200 text-slate-400";
+        let statusIcon = `<span class="text-[10px] font-bold">${idx + 1}</span>`;
+
+        if (isDone) {
+          cardClass = "bg-emerald-50 border-emerald-400 text-emerald-800";
+          statusIcon = `<i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i>`;
+        } else if (isCurrent) {
+          cardClass = "bg-amber-50 border-amber-400 text-amber-900 baton-active scale-[1.03]";
+          statusIcon = `<span class="text-[10px] font-extrabold bg-amber-400 text-amber-950 px-1.5 rounded-full">BATON</span>`;
+        }
+
+        const item = document.createElement("div");
+        item.className = `rounded-2xl border-2 p-2 text-center transition-all flex flex-col items-center justify-center ${cardClass}`;
+        item.innerHTML = `
+          <div class="text-lg sm:text-xl leading-none mb-1">${friend.emoji}</div>
+          <div class="text-[11px] sm:text-xs font-extrabold truncate w-full">${friend.name}</div>
+          <div class="mt-0.5">${statusIcon}</div>
+        `;
+        track.appendChild(item);
+      });
+    }
+
+    function loadChallenge() {
+      stopMicActivity();
+      clearBeatTimers();
+
+      const levelObj = LEVELS_DATA[state.currentLevel];
+      const challenge = getCurrentChallenge();
+      if (!challenge) return;
+
+      state.hasRepeatedCurrent = false;
+      state.hasAnsweredCurrent = false;
+      state.tappedBeats = [false, false, false];
+
+      // Header Badges & Progress
+      const lvlBadge = document.getElementById("game-level-badge");
+      lvlBadge.textContent = levelObj.title;
+      lvlBadge.className = `${levelObj.badgeClass} text-xs font-extrabold px-3 py-1 rounded-full`;
+
+      document.getElementById("game-topic-badge").innerHTML = `<span>${challenge.topicEmoji}</span> <span>${challenge.topic}</span>`;
+      document.getElementById("progress-current").textContent = state.currentIndex + 1;
+      document.getElementById("progress-total").textContent = levelObj.challenges.length;
+
+      renderRelayTrack();
+
+      // Reset Step 2 Repeat Box
+      const box = document.getElementById("repeat-activity-box");
+      box.className = "bg-amber-50/90 border-2 border-amber-300 rounded-2xl p-4 sm:p-5 transition-all";
+      const badge = document.getElementById("echo-bonus-badge");
+      badge.className = "text-xs font-extrabold text-amber-800 bg-amber-200 px-2.5 py-0.5 rounded-full";
+      badge.textContent = "+50 Echo Bonus";
+      document.getElementById("mic-feedback-panel").classList.add("hidden");
+      document.getElementById("mic-btn-label").textContent = "Echo with Mic";
+
+      for (let i = 0; i < 3; i++) {
+        const pad = document.getElementById(`tap-beat-${i}`);
+        if (pad) {
+          pad.className = "w-9 h-9 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-display font-bold text-sm transition";
+          pad.textContent = String(i + 1);
+        }
+      }
+
+      // Render Step 3 Options
+      const optionsContainer = document.getElementById("options-container");
+      optionsContainer.innerHTML = "";
+      const letters = ["A", "B", "C"];
+
+      challenge.options.forEach((optText, idx) => {
+        const btn = document.createElement("button");
+        btn.id = `option-btn-${idx}`;
+        btn.onclick = () => selectOption(idx);
+        btn.className = "w-full text-left p-4 rounded-2xl border-2 border-slate-200 bg-slate-50 hover:bg-sky-50 hover:border-sky-400 transition-all flex items-center gap-3.5 group shadow-sm";
+        btn.innerHTML = `
+          <span class="w-10 h-10 rounded-xl bg-white border-2 border-slate-300 group-hover:border-sky-500 group-hover:bg-sky-500 group-hover:text-white font-display font-bold text-lg text-slate-700 flex items-center justify-center shrink-0 transition">
+            ${letters[idx]}
+          </span>
+          <span class="font-bold text-base sm:text-lg text-slate-800 leading-snug">
+            ${optText}
+          </span>
+        `;
+        optionsContainer.appendChild(btn);
+      });
+
+      // Hide Step 4 Spotlight until answered
+      document.getElementById("feedback-spotlight-card").classList.add("hidden");
+
+      // Automatically play teacher audio after a short beat so the challenge starts lively!
+      setTimeout(() => {
+        playCurrentSentence(1.0);
+      }, 350);
+    }
+
+    function formatHighlightedSentence(challenge) {
+      // Highlight pronunciation and grammar key words inside the revealed sentence
+      const words = challenge.sentence.split(" ");
+      return words.map(word => {
+        const clean = word.replace(/[.,!?]/g, "").toLowerCase();
+        const isPron = challenge.pronunciationHighlight.some(h => clean.includes(h.toLowerCase()));
+        const isGram = challenge.grammarHighlight.some(h => h.toLowerCase().split(" ").includes(clean));
+
+        if (isPron && isGram) {
+          return `<span class="px-1.5 py-0.5 rounded-lg bg-gradient-to-r from-amber-200 to-sky-200 border-b-4 border-amber-500 text-slate-900">${word}</span>`;
+        } else if (isPron) {
+          return `<span class="px-1.5 py-0.5 rounded-lg bg-amber-100 border-b-4 border-amber-400 text-amber-950">${word}</span>`;
+        } else if (isGram) {
+          return `<span class="px-1.5 py-0.5 rounded-lg bg-sky-100 border-b-4 border-sky-400 text-sky-950">${word}</span>`;
+        }
+        return `<span>${word}</span>`;
+      }).join(" ");
+    }
+
+    function selectOption(selectedIdx) {
+      if (state.hasAnsweredCurrent) return;
+      state.hasAnsweredCurrent = true;
+      stopMicActivity();
+
+      const challenge = getCurrentChallenge();
+      const isCorrect = selectedIdx === challenge.correctIndex;
+      const letters = ["A", "B", "C"];
+
+      // Style all 3 option buttons to show the true answer clearly
+      challenge.options.forEach((optText, idx) => {
+        const btn = document.getElementById(`option-btn-${idx}`);
+        btn.disabled = true;
+
+        if (idx === challenge.correctIndex) {
+          btn.className = "w-full text-left p-4 rounded-2xl border-2 border-emerald-500 bg-emerald-50 flex items-center gap-3.5 shadow-md";
+          btn.innerHTML = `
+            <span class="w-10 h-10 rounded-xl bg-emerald-500 text-white font-display font-bold text-lg flex items-center justify-center shrink-0">
+              <i class="fa-solid fa-check"></i>
+            </span>
+            <span class="font-extrabold text-base sm:text-lg text-emerald-950 leading-snug flex-1">
+              ${optText}
+            </span>
+            <span class="text-xs font-extrabold uppercase bg-emerald-200 text-emerald-900 px-2.5 py-1 rounded-full">Correct</span>
+          `;
+        } else if (idx === selectedIdx && !isCorrect) {
+          btn.className = "w-full text-left p-4 rounded-2xl border-2 border-rose-400 bg-rose-50 flex items-center gap-3.5 opacity-90";
+          btn.innerHTML = `
+            <span class="w-10 h-10 rounded-xl bg-rose-500 text-white font-display font-bold text-lg flex items-center justify-center shrink-0">
+              <i class="fa-solid fa-xmark"></i>
+            </span>
+            <span class="font-bold text-base sm:text-lg text-rose-900 line-through leading-snug flex-1">
+              ${optText}
+            </span>
+            <span class="text-xs font-extrabold uppercase bg-rose-200 text-rose-900 px-2.5 py-1 rounded-full">Your Pick</span>
+          `;
+        } else {
+          btn.className = "w-full text-left p-4 rounded-2xl border-2 border-slate-200 bg-slate-50 opacity-50 flex items-center gap-3.5";
+        }
+      });
+
+      // Scoring & Encouraging Feedback
+      const banner = document.getElementById("feedback-banner");
+      const icon = document.getElementById("feedback-icon");
+      const heading = document.getElementById("feedback-heading");
+      const subtext = document.getElementById("feedback-subtext");
+      const spotlightCard = document.getElementById("feedback-spotlight-card");
+
+      if (isCorrect) {
+        playSfx("correct");
+        state.streak += 1;
+        state.firstTryHits += 1;
+        const streakBonus = state.streak >= 2 ? 20 : 0;
+        const earned = 100 + streakBonus;
+        state.score += earned;
+
+        const praises = [
+          "Bagus! Super listening!",
+          "Hebat! You nailed it!",
+          "Syabas! Crystal clear ears!",
+          "Awesome job! Spot on!"
+        ];
+        const randomPraise = praises[state.currentIndex % praises.length];
+
+        spotlightCard.className = "animate-pop-in bg-white rounded-3xl border-4 border-emerald-400 shadow-xl p-5 sm:p-7 space-y-5";
+        banner.className = "rounded-2xl p-4 flex items-start sm:items-center gap-3.5 bg-emerald-50 border-2 border-emerald-200";
+        icon.className = "w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-2xl shrink-0";
+        icon.innerHTML = `<i class="fa-solid fa-star"></i>`;
+        heading.className = "font-display font-bold text-lg sm:text-xl text-emerald-900";
+        heading.textContent = `${randomPraise} (+${earned} pts)`;
+        subtext.className = "text-sm text-emerald-800 font-semibold";
+        subtext.textContent = state.hasRepeatedCurrent
+          ? "Repeating it aloud first really helped your ear catch every word!"
+          : "Great match! Try doing the Final Class Choral Repeat below to lock it into memory.";
+      } else {
+        playSfx("encourage");
+        state.streak = 0;
+        state.score += 25; // Effort points for attempting!
+
+        spotlightCard.className = "animate-pop-in bg-white rounded-3xl border-4 border-amber-400 shadow-xl p-5 sm:p-7 space-y-5";
+        banner.className = "rounded-2xl p-4 flex items-start sm:items-center gap-3.5 bg-amber-50 border-2 border-amber-200";
+        icon.className = "w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-2xl shrink-0";
+        icon.innerHTML = `<i class="fa-solid fa-ear-listen"></i>`;
+        heading.className = "font-display font-bold text-lg sm:text-xl text-amber-900";
+        heading.textContent = `Good try! (+25 Effort pts) — Let's compare carefully!`;
+        subtext.className = "text-sm text-amber-900 font-semibold";
+        subtext.textContent = `You picked ${letters[selectedIdx]}, while Cikgu said ${letters[challenge.correctIndex]}. Listen and repeat the true sentence below!`;
+      }
+
+      updateHud();
+
+      // Populate Correct Sentence & Pronunciation/Grammar Spotlights
+      document.getElementById("revealed-sentence-text").innerHTML = formatHighlightedSentence(challenge);
+      document.getElementById("pronunciation-focus-tag").textContent = challenge.pronunciationTag;
+      document.getElementById("pronunciation-tip-text").textContent = challenge.pronunciationTip;
+      document.getElementById("grammar-focus-tag").textContent = challenge.grammarTag;
+      document.getElementById("grammar-tip-text").textContent = challenge.grammarTip;
+      document.getElementById("repetition-benefit-text").textContent = challenge.repetitionTip;
+
+      // Update Next Button Label
+      const total = LEVELS_DATA[state.currentLevel].challenges.length;
+      const nextFriend = RELAY_FRIENDS[state.currentIndex + 1];
+      document.getElementById("next-btn-label").textContent =
+        state.currentIndex + 1 < total
+          ? `Pass Baton to ${nextFriend ? nextFriend.name : "Next"}`
+          : "Finish Relay & View Certificate";
+
+      spotlightCard.classList.remove("hidden");
+      spotlightCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function nextChallenge() {
+      playSfx("baton");
+      const total = LEVELS_DATA[state.currentLevel].challenges.length;
+      if (state.currentIndex + 1 < total) {
+        state.currentIndex += 1;
+        loadChallenge();
+      } else {
+        finishRelay();
+      }
+    }
+
+    // ---------------------------------------------------------
+    // 6. RELAY SUMMARY & CELEBRATION
+    // ---------------------------------------------------------
+    function launchConfetti() {
+      const colors = ["#0ea5e9", "#f59e0b", "#10b981", "#f43f5e", "#8b5cf6"];
+      for (let i = 0; i < 42; i++) {
+        const piece = document.createElement("div");
+        piece.className = "confetti-piece";
+        piece.style.left = Math.random() * 100 + "vw";
+        piece.style.backgroundColor = colors[i % colors.length];
+        piece.style.animationDelay = (Math.random() * 0.9) + "s";
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 3800);
+      }
+    }
+
+    function finishRelay() {
+      stopMicActivity();
+      clearBeatTimers();
+      playSfx("correct");
+      launchConfetti();
+
+      // Save best score
+      if (state.score > (state.bestScores[state.currentLevel] || 0)) {
+        state.bestScores[state.currentLevel] = state.score;
+        try {
+          localStorage.setItem("passThePhrase_bestScores", JSON.stringify(state.bestScores));
+        } catch (e) {}
+      }
+      updateHud();
+
+      const levelObj = LEVELS_DATA[state.currentLevel];
+      document.getElementById("summary-score").textContent = state.score;
+      document.getElementById("summary-accuracy").textContent = `${state.firstTryHits}/6`;
+      document.getElementById("summary-echoes").textContent = `${state.echoCompletedCount}/6`;
+
+      // Calculate Stars
+      const starsEl = document.getElementById("summary-stars");
+      const starCount = state.firstTryHits >= 5 ? 3 : state.firstTryHits >= 3 ? 2 : 1;
+      starsEl.innerHTML = [1, 2, 3].map(n =>
+        n <= starCount
+          ? `<i class="fa-solid fa-star text-amber-400 drop-shadow"></i>`
+          : `<i class="fa-regular fa-star text-slate-300"></i>`
+      ).join("");
+
+      const encEl = document.getElementById("summary-encouragement");
+      if (starCount === 3) {
+        encEl.textContent = "Cemerlang! Outstanding listening and repetition! Your pronunciation and sentence rhythm are shining like a true Year 4 English Ambassador!";
+      } else if (starCount === 2) {
+        encEl.textContent = "Bagus sekali! Great progress! Keep repeating phrases out loud—every echo builds stronger vocabulary and grammar confidence.";
+      } else {
+        encEl.textContent = "Well done for completing the relay! Tap the phrases below to listen and repeat them again—practice makes progress!";
+      }
+
+      // Populate Review List
+      const listEl = document.getElementById("summary-phrase-list");
+      listEl.innerHTML = "";
+      levelObj.challenges.forEach((ch, idx) => {
+        const row = document.createElement("div");
+        row.className = "bg-white border border-slate-200 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-sm";
+        row.innerHTML = `
+          <div class="flex items-start gap-2.5">
+            <span class="w-7 h-7 rounded-lg bg-teal-100 text-teal-800 font-display font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+              ${idx + 1}
+            </span>
+            <div>
+              <p class="font-bold text-slate-800 text-sm sm:text-base">${ch.sentence}</p>
+              <p class="text-xs text-slate-500 font-semibold">${ch.topicEmoji} ${ch.topic} • ${ch.grammarTag}</p>
+            </div>
+          </div>
+          <button onclick="speakPhrase('${ch.sentence.replace(/'/g, "\\'")}', 0.95)"
+            class="btn-game self-end sm:self-center px-3 py-1.5 rounded-xl bg-sky-100 hover:bg-sky-200 text-sky-800 font-display font-bold text-xs flex items-center gap-1.5 shrink-0">
+            <i class="fa-solid fa-volume-high"></i>
+            <span>Listen &amp; Echo</span>
+          </button>
+        `;
+        listEl.appendChild(row);
+      });
+
+      const nextLvlBtn = document.getElementById("btn-next-level");
+      nextLvlBtn.querySelector("span").textContent =
+        state.currentLevel < 3 ? `Advance to Level ${state.currentLevel + 1}` : "Restart from Level 1";
+
+      showScreen("screen-summary");
+    }
+
+    // Initialize HUD on load
+    window.addEventListener("DOMContentLoaded", () => {
+      updateHud();
+    });
+  </script>
+</body>
+</html>
